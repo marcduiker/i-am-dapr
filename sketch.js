@@ -27,7 +27,7 @@ function setup() {
         audio: false
       };
     video = createCapture(constraints, VIDEO);
-    //video.size(minWidth, minHeight);
+    video.size(minWidth, minHeight);
 
     poseNet = ml5.poseNet(video, modelReady);
     poseNet.on('pose', function (results) {
