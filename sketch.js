@@ -8,14 +8,26 @@ let poses = [];
 let daprImage;
 const imageW = 600;
 const imageH = 350;
+const minWidth = 640;
+const minHeight = 480;
 
 function setup() {
     frameRate(15);
-    let canv = createCanvas(640, 480);
+    let canv = createCanvas(minWidth, minHeight);
     canv.parent('sketch')
     daprImage = loadImage('Dappy_600x350.png');
-    video = createCapture(VIDEO);
-    video.size(width, height);
+    let constraints = {
+        video: {
+          mandatory: {
+            minWidth: minWidth,
+            minHeight: minHeight
+          },
+          optional: [{ maxFrameRate: 15 }]
+        },
+        audio: false
+      };
+    video = createCapture(constraints, VIDEO);
+    video.size(minWidth, minHeight);
 
     poseNet = ml5.poseNet(video, modelReady);
     poseNet.on('pose', function (results) {
