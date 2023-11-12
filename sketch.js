@@ -9,7 +9,7 @@ let daprImage;
 const imageW = 600;
 const imageH = 350;
 const minWidth = 640;
-const ml5Confidence = 0.9
+const ml5Confidence = 0.9;
 let scaledWidth;
 let scaledHeight;
 let ratio;
@@ -122,7 +122,6 @@ function drawLine() {
                 const midY = rightEyeY + (leftEyeY - rightEyeY) / 2;
 
                 let threshold = 5;
-                console.log(Math.abs(midX - oldMidX), threshold);
                 if (Math.abs(midX - oldMidX) > threshold || Math.abs(midY - oldMidY) > threshold) {
                     eyeDist = dist(leftEyeX, leftEyeY, rightEyeX, rightEyeY);
                     oldleftEyeX = leftEyeX;
@@ -151,8 +150,6 @@ function drawLine() {
                 rotate(angle);
                 image(daprImage, -scaledW / 2, -scaledH * offsetH, scaledW, scaledH);
                 pop();
-
-
             }
         });
 }
