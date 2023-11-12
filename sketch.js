@@ -139,8 +139,8 @@ function drawLine() {
                     rightEyeY = oldrightEyeY;
                 }
 
-                const factor = map(eyeDist, 15, 150, 6, 0.5);
-                const offsetH = map(eyeDist, 15, 150, 1.2, 1.5);
+                const factor = map(eyeDist, 15, 150, 6, 0.25);
+                const offsetH = map(eyeDist, 15, 150, 1.5, 1.9);
                 const scaledW = imageW / factor;
                 const scaledH = imageH / factor;
 
