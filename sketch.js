@@ -14,6 +14,12 @@ let scaledWidth;
 let scaledHeight;
 let ratio;
 const ratios = [1, 3/2, 16/9];
+let oldleftEyeX = 0;
+let oldleftEyeY = 0;
+let oldrightEyeX = 0;
+let oldrightEyeY = 0;
+let oldMidX = 0;
+let oldMidY = 0;
 
 function setup() {
     frameRate(15);
@@ -104,29 +110,49 @@ function drawLine() {
         pose => {
             //console.log(pose);
             if (pose.pose.leftEye.confidence > ml5Confidence && pose.pose.rightEye.confidence > ml5Confidence) {
-                const leftEyeX = pose.pose.leftEye.x;
-                const leftEyeY = pose.pose.leftEye.y;
+                let leftEyeX = pose.pose.leftEye.x;
+                let leftEyeY = pose.pose.leftEye.y;
+                //ellipse(leftEyeX, leftEyeY, 10, 10);
 
-                const rightEyeX = pose.pose.rightEye.x;
-                const rightEyeY = pose.pose.rightEye.y;
+                let rightEyeX = pose.pose.rightEye.x;
+                let rightEyeY = pose.pose.rightEye.y;
+                //ellipse(rightEyeX, rightEyeY, 10, 10);
 
                 const midX = rightEyeX + (leftEyeX - rightEyeX) / 2;
                 const midY = rightEyeY + (leftEyeY - rightEyeY) / 2;
-                
-                const eyeDist = dist(leftEyeX, leftEyeY, rightEyeX, rightEyeY);
-                //console.log(eyeDist);
+
+                let threshold = 5;
+                console.log(Math.abs(midX - oldMidX), threshold);
+                if (Math.abs(midX - oldMidX) > threshold || Math.abs(midY - oldMidY) > threshold) {
+                    eyeDist = dist(leftEyeX, leftEyeY, rightEyeX, rightEyeY);
+                    oldleftEyeX = leftEyeX;
+                    oldleftEyeY = leftEyeY;
+                    oldrightEyeX = rightEyeX;
+                    oldrightEyeY = rightEyeY;
+                    oldMidX = midX;
+                    oldMidY = midY;
+                } else {
+                    // reuse old values
+                    eyeDist = dist(oldleftEyeX, oldleftEyeY, oldrightEyeX, oldrightEyeY);
+                    leftEyeX = oldleftEyeX;
+                    leftEyeY = oldleftEyeY;
+                    rightEyeX = oldrightEyeX;
+                    rightEyeY = oldrightEyeY;
+                }
+
                 const factor = map(eyeDist, 15, 150, 6, 0.5);
                 const offsetH = map(eyeDist, 15, 150, 1.2, 1.5);
                 const scaledW = imageW / factor;
                 const scaledH = imageH / factor;
 
-                if (leftEyeX)
                 push();
                 translate(midX, midY);
                 const angle = atan2(leftEyeY - rightEyeY, leftEyeX - rightEyeX);
                 rotate(angle);
                 image(daprImage, -scaledW / 2, -scaledH * offsetH, scaledW, scaledH);
                 pop();
+
+
             }
         });
 }
