@@ -8,7 +8,7 @@ let poses = [];
 let daprImage;
 const imageW = 600;
 const imageH = 350;
-const minWidth = 640;
+const minWidth = 1080;
 const ml5Confidence = 0.9;
 let scaledWidth;
 let scaledHeight;
@@ -22,7 +22,7 @@ let oldMidX = 0;
 let oldMidY = 0;
 
 function setup() {
-    frameRate(15);
+    frameRate(30);
     radio = createRadio();
     radio.option(0, '1:1');
     radio.option(1, '3:2');
@@ -121,7 +121,7 @@ function drawLine() {
                 const midX = rightEyeX + (leftEyeX - rightEyeX) / 2;
                 const midY = rightEyeY + (leftEyeY - rightEyeY) / 2;
 
-                let threshold = 5;
+                let threshold = 15;
                 if (Math.abs(midX - oldMidX) > threshold || Math.abs(midY - oldMidY) > threshold) {
                     eyeDist = dist(leftEyeX, leftEyeY, rightEyeX, rightEyeY);
                     oldleftEyeX = leftEyeX;
