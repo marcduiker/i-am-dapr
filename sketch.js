@@ -1,19 +1,20 @@
 // Dapr hat cam
-// Marc Duiker, July 2023
+// Marc Duiker, Mar 2025
 // @marcduiker
 
 let video;
-let poseNet;
+let bodyPose;
 let poses = [];
 let daprImage;
+let connections;
 const imageW = 600;
 const imageH = 350;
 const minWidth = 1080;
-const ml5Confidence = 0.9;
+const ml5Confidence = 0.3;
 let scaledWidth;
 let scaledHeight;
 let ratio;
-const ratios = [1, 3/2, 16/9];
+const ratios = [1, 4/3, 3/2, 16/9];
 let oldleftEyeX = 0;
 let oldleftEyeY = 0;
 let oldrightEyeX = 0;
@@ -21,13 +22,18 @@ let oldrightEyeY = 0;
 let oldMidX = 0;
 let oldMidY = 0;
 
+function preload() {
+    bodyPose = ml5.bodyPose(options = {enableSmoothing: true});
+  }
+
 function setup() {
-    frameRate(30);
+    frameRate(15);
     radio = createRadio();
     radio.option(0, '1:1');
+    radio.option(2, '4:3');
     radio.option(1, '3:2');
     radio.option(2, '16:9');
-    radio.style('width', '140px');
+    radio.style('width', '200px');
     radio.style('font-family', 'Space Grotesk');
     radio.style('font-size', '16px');
     radio.style('color', '#fff');
@@ -67,16 +73,19 @@ function reset() {
     }
     console.log(scaledWidth, scaledHeight);
     video.size(scaledWidth, scaledHeight);
-
-    poseNet = ml5.poseNet(video, modelReady);
-    poseNet.on('pose', function (results) {
-        poses = results;
-    });
     video.hide();
+    bodyPose.detectStart(video, gotPoses);
+    connections = bodyPose.getSkeleton();
 
     let canv = createCanvas(scaledWidth, scaledHeight);
     canv.parent('sketch');
 }
+
+function gotPoses(results) {
+    // Store the model's results in a global variable
+    poses = results;
+    modelReady();
+  }
 
 function ratioChanged() {
     clear();
@@ -108,14 +117,13 @@ function drawLine() {
     if (poses == null) return;
     poses.forEach(
         pose => {
-            //console.log(pose);
-            if (pose.pose.leftEye.confidence > ml5Confidence && pose.pose.rightEye.confidence > ml5Confidence) {
-                let leftEyeX = pose.pose.leftEye.x;
-                let leftEyeY = pose.pose.leftEye.y;
+            if (pose.left_eye.confidence > ml5Confidence && pose.right_eye.confidence > ml5Confidence) {
+                let leftEyeX = pose.left_eye.x;
+                let leftEyeY = pose.left_eye.y;
                 //ellipse(leftEyeX, leftEyeY, 10, 10);
 
-                let rightEyeX = pose.pose.rightEye.x;
-                let rightEyeY = pose.pose.rightEye.y;
+                let rightEyeX = pose.right_eye.x;
+                let rightEyeY = pose.right_eye.y;
                 //ellipse(rightEyeX, rightEyeY, 10, 10);
 
                 const midX = rightEyeX + (leftEyeX - rightEyeX) / 2;
@@ -138,9 +146,10 @@ function drawLine() {
                     rightEyeX = oldrightEyeX;
                     rightEyeY = oldrightEyeY;
                 }
-
-                const factor = map(eyeDist, 15, 150, 6, 0.25);
-                const offsetH = map(eyeDist, 15, 150, 1.5, 1.9);
+                const minEyeDist = 15;
+                const maxEyeDist = 150;
+                const factor = map(eyeDist, minEyeDist, maxEyeDist, 5, 0.1);
+                const offsetH = map(eyeDist, minEyeDist, maxEyeDist, 1.1, 1.5);
                 const scaledW = imageW / factor;
                 const scaledH = imageH / factor;
 
