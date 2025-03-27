@@ -3,6 +3,7 @@
 // @marcduiker
 
 let video;
+const desiredFrameRate = 15;
 let bodyPose;
 let poses = [];
 let daprImage;
@@ -10,6 +11,7 @@ let connections;
 const imageW = 600;
 const imageH = 350;
 const minWidth = 1080;
+const desiredRatio = 16/9;
 const ml5Confidence = 0.3;
 let scaledWidth;
 let scaledHeight;
@@ -24,53 +26,30 @@ let oldMidY = 0;
 
 function preload() {
     bodyPose = ml5.bodyPose(options = {enableSmoothing: true});
-  }
+}
 
 function setup() {
-    frameRate(15);
-    radio = createRadio();
-    radio.option(0, '1:1');
-    radio.option(2, '4:3');
-    radio.option(1, '3:2');
-    radio.option(2, '16:9');
-    radio.style('width', '200px');
-    radio.style('font-family', 'Space Grotesk');
-    radio.style('font-size', '16px');
-    radio.style('color', '#fff');
-    radio.style('padding', '8px');
-    radio.changed(() => {
-        ratioChanged();
-    });
-    radio.position(windowWidth / 2 - 70, 10);
-    radio.hide();
-    
+    frameRate(desiredFrameRate);
     daprImage = loadImage('Dappy_600x350.png');
     let constraints = {
         video: {
           mandatory: {
-            minWidth: minWidth
+            minWidth: minWidth,
+            aspectRatio: desiredRatio
           },
-          optional: [{ maxFrameRate: 15 }]
+          optional: [{minFrameRate: desiredFrameRate}]
         },
         audio: false
       };
-    video = createCapture(constraints, VIDEO);
-    //console.log(video.width, video.height);
-
-    ratio = video.width / video.height;
+    video = createCapture(constraints);
     reset();
 }
 
 function reset() {
     select('#status').show();
-    radio.hide();
     poses = null;
     scaledWidth = windowWidth;
-    scaledHeight = scaledWidth / ratio;
-    if (scaledHeight > windowHeight) {
-        scaledHeight = windowHeight;
-        scaledWidth = scaledHeight * ratio;
-    }
+    scaledHeight = scaledWidth / desiredRatio;
     console.log(scaledWidth, scaledHeight);
     video.size(scaledWidth, scaledHeight);
     video.hide();
@@ -81,21 +60,19 @@ function reset() {
     canv.parent('sketch');
 }
 
+function windowResized() {
+    reset();
+    //resizeCanvas(windowWidth, windowHeight);
+}
+
 function gotPoses(results) {
     // Store the model's results in a global variable
     poses = results;
     modelReady();
   }
 
-function ratioChanged() {
-    clear();
-    ratio = ratios[radio.value()];
-    reset();
-}
-
 function modelReady() {
     select('#status').hide();
-    radio.show();
 }
 
 function draw() {
@@ -146,12 +123,11 @@ function drawLine() {
                     rightEyeX = oldrightEyeX;
                     rightEyeY = oldrightEyeY;
                 }
-                const minEyeDist = 15;
-                const maxEyeDist = 150;
-                const factor = map(eyeDist, minEyeDist, maxEyeDist, 5, 0.1);
-                const offsetH = map(eyeDist, minEyeDist, maxEyeDist, 1.1, 1.5);
-                const scaledW = imageW / factor;
-                const scaledH = imageH / factor;
+                const minEyeDist = scaledWidth/100;
+                const maxEyeDist = scaledWidth/10;
+                const offsetH = map(eyeDist, minEyeDist, maxEyeDist, 1.2, 1.5);
+                const scaledW = eyeDist * 3.5;
+                const scaledH = eyeDist * 3.5 * imageH / imageW;
 
                 push();
                 translate(midX, midY);
